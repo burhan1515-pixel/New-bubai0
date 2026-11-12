@@ -1,4 +1,4 @@
-name: Extract NEW DUBAI ZIP
+name: Extract NEW DUBAI Project
 
 on:
   workflow_dispatch:
@@ -8,22 +8,33 @@ permissions:
 
 jobs:
   extract:
+    name: Extract ZIP and Commit Files
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ github.token }}
 
-      - name: Extract ZIP
+      - name: Install Unzip
+        run: sudo apt-get update && sudo apt-get install -y unzip
+
+      - name: Extract Project ZIP
+        shell: bash
         run: |
+          set -e
+
           ZIP_FILE="NEW_DUBAI_PROFESSIONAL_UPGRADED.zip"
 
           if [ ! -f "$ZIP_FILE" ]; then
-            echo "ZIP file not found"
+            echo "ERROR: ZIP file not found!"
             exit 1
           fi
 
           mkdir -p /tmp/newdubai
+
           unzip -q "$ZIP_FILE" -d /tmp/newdubai
 
           FIRST=$(find /tmp/newdubai -mindepth 1 -maxdepth 1 | head -n 1)
@@ -36,17 +47,37 @@ jobs:
           fi
 
           rm -rf /tmp/newdubai
-          rm -f "$ZIP_FILE"
 
-      - name: Commit Extracted Files
+          echo "ZIP extraction completed."
+
+      - name: Verify Project Files
         run: |
+          test -f app/build.gradle.kts
+          test -f settings.gradle.kts
+          test -f build.gradle.kts
+
+          echo "Project files verified."
+
+      - name: Commit Extracted Project
+        shell: bash
+        run: |
+          set -e
+
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
           git add -A
 
+          # GitHub Actions token cannot create workflow files.
+          # Keep build.yml for a separate authorized upload.
+          git reset -- .github/workflows/build.yml
+
           if git diff --cached --quiet; then
-            echo "No changes to commit"
+            echo "No changes to commit."
           else
-            git commit -m "Extract NEW DUBAI project"
-            git push
+            git commit -m "Extract NEW DUBAI professional project"
+            git push origin HEAD:main
           fi
+
+      - name: Extraction Complete
+        run: echo "NEW DUBAI project extraction finished successfully."
