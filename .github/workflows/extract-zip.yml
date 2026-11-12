@@ -1,52 +1,52 @@
 name: Extract NEW DUBAI ZIP
 
 on:
-workflow_dispatch:
+  workflow_dispatch:
 
 permissions:
-contents: write
+  contents: write
 
 jobs:
-extract:
-runs-on: ubuntu-latest
+  extract:
+    runs-on: ubuntu-latest
 
-steps:
-  - name: Checkout Repository
-    uses: actions/checkout@v4
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-  - name: Extract ZIP
-    run: |
-      ZIP_FILE="NEW_DUBAI_PROFESSIONAL_UPGRADED.zip"
+      - name: Extract ZIP
+        run: |
+          ZIP_FILE="NEW_DUBAI_PROFESSIONAL_UPGRADED.zip"
 
-      if [ ! -f "$ZIP_FILE" ]; then
-        echo "ZIP file not found: $ZIP_FILE"
-        exit 1
-      fi
+          if [ ! -f "$ZIP_FILE" ]; then
+            echo "ZIP file not found"
+            exit 1
+          fi
 
-      mkdir -p /tmp/newdubai
-      unzip -q "$ZIP_FILE" -d /tmp/newdubai
+          mkdir -p /tmp/newdubai
+          unzip -q "$ZIP_FILE" -d /tmp/newdubai
 
-      FIRST=$(find /tmp/newdubai -mindepth 1 -maxdepth 1 | head -n 1)
-      COUNT=$(find /tmp/newdubai -mindepth 1 -maxdepth 1 | wc -l)
+          FIRST=$(find /tmp/newdubai -mindepth 1 -maxdepth 1 | head -n 1)
+          COUNT=$(find /tmp/newdubai -mindepth 1 -maxdepth 1 | wc -l)
 
-      if [ "$COUNT" -eq 1 ] && [ -d "$FIRST" ]; then
-        cp -a "$FIRST"/. .
-      else
-        cp -a /tmp/newdubai/. .
-      fi
+          if [ "$COUNT" -eq 1 ] && [ -d "$FIRST" ]; then
+            cp -a "$FIRST"/. .
+          else
+            cp -a /tmp/newdubai/. .
+          fi
 
-      rm -rf /tmp/newdubai
-      rm -f "$ZIP_FILE"
+          rm -rf /tmp/newdubai
+          rm -f "$ZIP_FILE"
 
-  - name: Commit Extracted Files
-    run: |
-      git config user.name "github-actions[bot]"
-      git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-      git add -A
+      - name: Commit Extracted Files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
 
-      if git diff --cached --quiet; then
-        echo "No changes to commit"
-      else
-        git commit -m "Extract NEW DUBAI professional project"
-        git push
-      fi
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Extract NEW DUBAI project"
+            git push
+          fi
